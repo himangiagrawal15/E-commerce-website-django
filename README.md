@@ -1,5 +1,5 @@
 ﻿# E-commerce-website-django
-Perfect 👌 I’ll write you a **professional README.md** for your Django E-commerce project. This will explain the project, dependencies, setup instructions, and how to run it. You can paste this directly into your repo’s `README.md`.
+
 
 ---
 
@@ -129,5 +129,6 @@ ecomsite/
 🔗 [GitHub](https://github.com/himangiagrawal15)
 
 ---
+
 
 
