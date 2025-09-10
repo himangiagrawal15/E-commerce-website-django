@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Fancy Store{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+<!-- 🌟 Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Fancy Store</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarNav" aria-controls="navbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+
+        <!-- Login / Signup links -->
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="/logout/">Logout</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="/login/">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/signup/">Signup</a>
+          </li>
+        {% endif %}
+
+        <!-- Cart Button -->
+        <li class="nav-item ms-3">
+          <button type="button" class="btn btn-outline-light cart position-relative">
+  🛒 Cart <span id="cart" class="badge bg-danger position-absolute top-0 start-100 translate-middle">0</span>
+</button>
+
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- 🌟 Main Content -->
+<div class="container mt-4">
+  {% block content %}
+  {% endblock %}
+</div>
+
+<!-- Bootstrap Bundle (with Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Page Specific Scripts -->
+{% block scripts %}{% endblock %}
+
+</body>
+<script>// Load cart from localStorage
+if (localStorage.getItem('cart') == null) {
+    var cart = {};
+} else {
+    cart = JSON.parse(localStorage.getItem('cart'));
+}
+
+// Initialize cart count on page load
+document.getElementById("cart").innerText = Object.keys(cart).length;
+
+// Popover content for cart
+function getCartPopoverContent() {
+    if (Object.keys(cart).length === 0) {
+        return "Cart is empty";
+    }
+    let content = "<div class='p-2'>";
+    content += "<ul class='list-group list-group-flush'>";
+        
+    for (let id in cart) {
+        content += `<li class="list-group-item d-flex justify-content-between px-0">
+                        ${cart[id][1]}
+                        <span class="badge bg-primary">${cart[id][0]}</span>
+                    </li>`;
+    }
+    content += "</ul>";
+    content += "</div>";
+    content += `<div class='p-2 border-top'>
+                    <button class='btn btn-success btn-sm w-100' onclick='window.location.href="/checkout/"'>
+                        Go to Checkout
+                    </button>
+                </div>`;
+    
+    return content;
+}
+
+// Initialize Bootstrap popover
+var cartBtn = document.querySelector('.cart');
+var popover = new bootstrap.Popover(cartBtn, {
+    html: true,
+    sanitize: false,
+    trigger: 'click',
+    placement: 'bottom',
+    content: function() {
+        return getCartPopoverContent();
+    }
+});
+
+// Add to Cart button click - VANILLA JAVASCRIPT VERSION
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('atc')) {
+        var item_id = e.target.id.toString();
+        var name = document.getElementById("nm" + item_id).innerText;
+        var unitPrice = parseFloat(document.getElementById("price" + item_id).innerText);
+
+        if (cart[item_id] !== undefined) {
+            cart[item_id][0] += 1; // quantity
+            cart[item_id][3] = cart[item_id][0] * cart[item_id][2]; // update total price
+        } else {
+            cart[item_id] = [1, name, unitPrice, unitPrice]; 
+            // [quantity, name, unitPrice, totalPrice]
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        document.getElementById("cart").innerHTML = Object.keys(cart).length;
+        
+        // Force popover to update its content
+        if (popover) {
+            popover.hide();
+            setTimeout(() => {
+                popover.show();
+            }, 100);
+        }
+    }
+});
+
+// Ensure popover hides when clicking elsewhere
+document.addEventListener('click', function (e) {
+    if (!cartBtn.contains(e.target)) {
+        popover.hide();
+    }
+});</script>
+</html>
